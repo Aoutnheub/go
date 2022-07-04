@@ -31,9 +31,13 @@ const (
 )
 
 type Results struct {
+    /// Stores flag values after parsing
     Flag map[string]bool
+    /// Stores option values after parsing
     Option map[string]string
+    /// Stores positional arguments after parsing
     Positional []string
+    /// Stores the command after parsing
     Command string
 }
 
@@ -54,20 +58,36 @@ type Parser struct {
     description string
     cachedHelp string
 
+    /// Return an error if the first argument isn't a command. Ignored if no
+    /// commands have been added
     CommandRequired bool
+    /// Header displayed by the `Help` function before the command descriptions
     CommandsHelpMsg string
+    /// Header displayed by the `Help` function before the flag descriptions
     FlagsHelpMsg string
+    /// Header displayed by the `Help` function before the option descriptions
     OptionsHelpMsg string
+    /// Color the output of the `Help` function
     Colors bool
+    /// Color of the title outputed by the `Help` function
     TitleColor ANSICode
+    /// Color of the description outputed by the `Help` function
     DescriptionColor ANSICode
+    /// Color of the headers outputed by the `Help` function
     HeaderColor ANSICode
+    /// Color of the command names outputed by the `Help` function
     CommandColor ANSICode
+    /// Color of the command's description outputed by the `Help` function
     CommandDescriptionColor ANSICode
+    /// Color of the flag names outputed by the `Help` function
     FlagColor ANSICode
+    /// Color of the flag's description outputed by the `Help` function
     FlagDescriptionColor ANSICode
+    /// Color of the option names outputed by the `Help` function
     OptionColor ANSICode
+    /// Color of the option's description outputed by the `Help` function
     OptionDescriptionColor ANSICode
+    /// Color of the option's allowed values outputed by the `Help` function
     OptionAllowedColor ANSICode
 }
 
@@ -107,6 +127,7 @@ func (ap *Parser) isAllowedOptionValue(opt string, val string) bool {
     return allowed
 }
 
+/// Initialize the struct
 func (ap *Parser) Init(name string, description string) {
     if name != "" { ap.name = name }
     if description != "" { ap.description = description }
@@ -132,6 +153,11 @@ func (ap *Parser) Init(name string, description string) {
     ap.OptionAllowedColor = ANSIYellow
 }
 
+/// Add a flag
+/// @param name flag's name
+/// @param help flag's description
+/// @param abbr flag's abbreviation
+/// @return Error is the  flag already exists
 func (ap *Parser) AddFlag(name string, help string, abbr rune) error {
     _, foundFl := ap.flags[name]
     _, foundOp := ap.options[name]
@@ -151,6 +177,13 @@ func (ap *Parser) AddFlag(name string, help string, abbr rune) error {
     return nil
 }
 
+/// Add an option
+/// @param name option's name
+/// @param help option's description
+/// @param abbr option's abbreviation
+/// @param defaultsTo option's default value
+/// @param allowed option's allowed values. Doesn't necessarily need to contain the default value
+/// @return An error if the option already exists
 func (ap *Parser) AddOption(
     name string, help string, abbr rune, defaultsTo string, allowed []string,
 ) error {
@@ -174,6 +207,10 @@ func (ap *Parser) AddOption(
     return nil
 }
 
+/// Add a command
+/// @param name command's name
+/// @param help command's description
+/// @return Error if the command already exists
 func (ap *Parser) AddCommand(name string, help string) error {
     _, found := ap.commands[name]
     if !found {
@@ -185,6 +222,7 @@ func (ap *Parser) AddCommand(name string, help string) error {
     return nil
 }
 
+/// Display the help message
 func (ap *Parser) Help() {
     if ap.name != "" {
         if ap.Colors { fmt.Print(ap.TitleColor) }
@@ -351,6 +389,8 @@ func (ap *Parser) Help() {
     }
 }
 
+/// Parse the command line arguments
+/// @return A "Results" struct with the argument values or error
 func (ap *Parser) Parse() (*Results, error) {
     results := new(Results)
     results.Flag = map[string]bool{}
